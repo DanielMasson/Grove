@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "notebooks": [
+    { "id": "nb-mat", "name": "Matemática", "biome": "montanha", "createdAt": "2026-10-01T10:00:00.000Z", "sources": [] },
+    { "id": "nb-por", "name": "Português", "biome": "planicie", "createdAt": "2026-10-01T10:00:00.000Z", "sources": [] }
+  ],
+  "columns": [
+    { "id": "todo", "name": "A fazer", "order": 0 },
+    { "id": "doing", "name": "Em andamento", "order": 1 },
+    { "id": "done", "name": "Concluído", "order": 2 }
+  ],
+  "tasks": [
+    { "id": "t1", "title": "Lista de funções", "description": "", "dueDate": "2026-11-05", "priority": "alta", "columnId": "todo", "notebookId": "nb-mat", "order": 0 },
+    { "id": "t2", "title": "Resumo de Machado de Assis", "description": "", "priority": "media", "columnId": "doing", "notebookId": "nb-por", "order": 1 }
+  ],
+  "sessions": [
+    { "id": "s1", "completedAt": "2026-10-20T13:00:00.000Z", "minutes": 25, "notebookId": "nb-mat", "taskId": "t1", "biome": "montanha", "species": "pinheiro" },
+    { "id": "s2", "completedAt": "2026-10-21T14:00:00.000Z", "minutes": 45, "notebookId": "nb-por", "biome": "planicie", "species": "carvalho" }
+  ]
+}

@@ -1,0 +1,16 @@
+/* Tokens de cor/tipografia. Todo o CSS usa var(--...) para facilitar o modo escuro depois:
+   basta redefinir estes valores em [data-theme='dark']. */
+:root {
+  --bg: #f3faf6;
+  --surface: #ffffff;
+  --text: #1d3b34;
+  --text-muted: #4f6f67;
+  --primary: #2f8f6b;
+  --primary-contrast: #ffffff;
+  --accent: #4a90c2;
+  --border: #cfe3da;
+  --danger: #b4443c;
+  --overlay: rgba(29, 59, 52, 0.45);
+  --radius: 12px;
+  --font: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
