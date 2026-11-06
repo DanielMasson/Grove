@@ -10,7 +10,8 @@ Sugeridos: @dnd-kit (kanban), Chart.js + react-chartjs-2 (gráficos). Árvores e
 ## Regras (não quebrar)
 1. Interface em **português do Brasil**. Código e nomes de variáveis podem ser em inglês.
 2. **Só `src/store/useStore.js` acessa o localStorage.** As telas usam o hook `useStore`.
-3. **`src/types.js` é o contrato de dados** (documentado em JSDoc `@typedef`). Mudou? Avise o grupo e atualize `schemaVersion` se quebrar compatibilidade.
+3. **`src/types.js` é o contrato de dados**, documentado com JSDoc (`@typedef`). Mudou? Avise o grupo e atualize `schemaVersion` se quebrar compatibilidade.
+   Como não há TypeScript, **nada barra um campo errado em tempo de execução**: valide entradas de formulário e de importação, e use JSDoc (`@param`, `@returns`, `@type`) nas funções compartilhadas para o editor e a IA enxergarem os formatos.
 4. **HashRouter, sempre.** `base: './'` no Vite. Não usar BrowserRouter.
 5. Texto do usuário é só texto: nunca `dangerouslySetInnerHTML`. Links externos com `rel="noopener noreferrer"`.
 6. Cores só via variáveis de `src/styles/tokens.css` (preparar para modo escuro depois). Paleta calma: verdes e azuis.
@@ -25,9 +26,12 @@ Sugeridos: @dnd-kit (kanban), Chart.js + react-chartjs-2 (gráficos). Árvores e
 - **Vínculos:** uma sessão pode ter tarefa e caderno. Toda tarefa pertence a um caderno (matéria).
   Se a sessão tem tarefa, herda o caderno da tarefa.
 - **Biomas:** cada caderno tem um bioma (`planicie`, `montanha`, `floresta`, `savana`). Cada bioma tem várias espécies
-  de árvore (ver `src/biomes/config.js`). Sessão sem caderno usa bioma neutro (a definir).
-- **Crescimento:** a árvore passa por estágios (`GROWTH_STAGES`). Estágios atingidos ficam salvos e novas sessões
-  fazem a árvore evoluir (regra exata ainda em definição).
+  de árvore (ver `src/biomes/config.js`). Sessão sem caderno usa a **planície**.
+- **Duração:** de 15 a 120 min. **Pausar** só depois de 10 min de foco, sem limite de tempo pausado.
+- **Crescimento:** a árvore tem 4 estágios (`Stage` 1 a 4). Cada 30 min de foco rendem 1 estágio, arredondando para cima
+  (`stagesForMinutes`). Ao iniciar, o usuário escolhe a **espécie** e se vai **plantar nova árvore ou evoluir uma existente**.
+  Ao concluir, `completeSession` (no store) planta/evolui a `Tree` e grava a `Session`. Telas nunca mexem em `trees` direto.
+- **Notebook dormindo** não conta como aba fechada: o cálculo por horário mantém a sessão correta.
 - **Kanban:** colunas personalizáveis (criar, renomear, remover).
 - **Floresta:** a aba principal mostra cards-resumo por bioma; cada bioma tem sua aba/cena.
 - **Backup:** exportar/importar JSON (já implementado em `BackupButtons`).

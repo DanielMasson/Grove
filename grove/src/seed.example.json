@@ -10,11 +10,15 @@
     { "id": "done", "name": "Concluído", "order": 2 }
   ],
   "tasks": [
-    { "id": "t1", "title": "Lista de funções", "description": "", "dueDate": "2026-11-05", "priority": "alta", "columnId": "todo", "notebookId": "nb-mat", "order": 0 },
+    { "id": "t1", "title": "Lista de funções", "description": "", "dueDate": "2026-11-20", "priority": "alta", "columnId": "todo", "notebookId": "nb-mat", "order": 0 },
     { "id": "t2", "title": "Resumo de Machado de Assis", "description": "", "priority": "media", "columnId": "doing", "notebookId": "nb-por", "order": 1 }
   ],
+  "trees": [
+    { "id": "tr1", "biome": "montanha", "species": "pinheiro", "stages": 1, "plantedAt": "2026-10-20T13:00:00.000Z", "notebookId": "nb-mat" },
+    { "id": "tr2", "biome": "planicie", "species": "carvalho", "stages": 2, "plantedAt": "2026-10-21T14:00:00.000Z", "notebookId": "nb-por" }
+  ],
   "sessions": [
-    { "id": "s1", "completedAt": "2026-10-20T13:00:00.000Z", "minutes": 25, "notebookId": "nb-mat", "taskId": "t1", "biome": "montanha", "species": "pinheiro" },
-    { "id": "s2", "completedAt": "2026-10-21T14:00:00.000Z", "minutes": 45, "notebookId": "nb-por", "biome": "planicie", "species": "carvalho" }
+    { "id": "s1", "completedAt": "2026-10-20T13:00:00.000Z", "minutes": 25, "notebookId": "nb-mat", "taskId": "t1", "biome": "montanha", "species": "pinheiro", "treeId": "tr1", "stagesGained": 1 },
+    { "id": "s2", "completedAt": "2026-10-21T14:00:00.000Z", "minutes": 45, "notebookId": "nb-por", "biome": "planicie", "species": "carvalho", "treeId": "tr2", "stagesGained": 2 }
   ]
 }

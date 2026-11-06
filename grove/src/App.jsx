@@ -4,6 +4,8 @@ import ForestPage from './features/forest/ForestPage'
 import StatsPage from './features/stats/StatsPage'
 import TasksPage from './features/tasks/TasksPage'
 import NotebooksPage from './features/notebooks/NotebooksPage'
+import NotebookDetailPage from './features/notebooks/NotebookDetailPage'
+import CompletionDialog from './features/focus/CompletionDialog'
 import BackupButtons from './components/BackupButtons'
 import { useTimer } from './features/focus/useTimer'
 import { useSessionWatcher } from './features/focus/useSessionWatcher'
@@ -19,6 +21,8 @@ const links = [
 
 export default function App() {
   const active = useTimer((s) => s.active)
+  const justCompleted = useTimer((s) => s.justCompleted)
+  const clearCompleted = useTimer((s) => s.clearCompleted)
 
   // Conclui a sessão mesmo se o usuário estiver em outra tela (spec 01, seção 3).
   useSessionWatcher()
@@ -59,9 +63,11 @@ export default function App() {
           <Route path="/graficos" element={<StatsPage />} />
           <Route path="/tarefas" element={<TasksPage />} />
           <Route path="/cadernos" element={<NotebooksPage />} />
+          <Route path="/cadernos/:id" element={<NotebookDetailPage />} />
           <Route path="*" element={<Navigate to="/foco" replace />} />
         </Routes>
       </main>
+      {justCompleted && <CompletionDialog result={justCompleted} onClose={clearCompleted} />}
     </HashRouter>
   )
 }

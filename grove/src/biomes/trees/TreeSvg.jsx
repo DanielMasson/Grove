@@ -1,4 +1,5 @@
-import { BIOMES, GROWTH_STAGES, MAX_STAGES } from '../../biomes/config'
+import { BIOMES, GROWTH_STAGES, MAX_STAGES } from '../config'
+import './tree.css'
 
 /**
  * @typedef {Object} TreeSvgProps

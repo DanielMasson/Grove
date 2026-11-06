@@ -1,0 +1,123 @@
+/* Estilos compartilhados (campos, botões, diálogos).
+   Importado em main.jsx, então vale em qualquer rota — não só no Foco. */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 10px;
+}
+
+.field label {
+  font-weight: 600;
+}
+
+.field select {
+  font: inherit;
+  padding: 10px 12px;
+  min-height: 44px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+}
+
+.field-error {
+  color: var(--danger);
+  font-weight: 600;
+  margin: 8px 0 0;
+}
+
+.hint {
+  color: var(--text-muted);
+  font-size: 0.92rem;
+  margin: 6px 0 0;
+}
+
+.hint a {
+  color: var(--accent);
+}
+
+.button-primary {
+  background: var(--primary);
+  color: var(--primary-contrast);
+  border-color: var(--primary);
+  font-weight: 600;
+}
+
+.button-danger,
+.focus-giveup {
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+/* Diálogos (conclusão e confirmações) */
+.dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  background: var(--overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 10;
+}
+
+.dialog {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  max-width: 420px;
+  width: 100%;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dialog h2 {
+  margin: 0;
+}
+
+.dialog p {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.dialog-emoji {
+  font-size: 2.4rem;
+  margin: 0;
+}
+
+.dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.dialog-actions button {
+  min-height: 44px;
+  min-width: 120px;
+}
+
+/* Modal nativo: focus trap, Esc e retorno do foco vêm de graça com <dialog>. */
+dialog.modal {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  padding: 24px;
+  width: min(480px, calc(100vw - 32px));
+}
+
+dialog.modal::backdrop {
+  background: var(--overlay);
+}
+
+dialog.modal h2 {
+  margin: 0 0 12px;
+}

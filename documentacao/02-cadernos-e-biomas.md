@@ -1,7 +1,7 @@
 # Spec 02: Cadernos e Biomas
 
 > Responsável: _(definir)_ · Pasta: `src/features/notebooks/` (+ `src/biomes/`) · Requisitos: RF16 a RF20, RF09 (parcial), RNF01, RNF02, RNF05, RNF07
-> Antes de começar, leia `AGENTS.md`, `src/types.ts` e `docs/specs/01-foco.md`. Itens **[CONFIRMAR]** estão na seção 14.
+> Antes de começar, leia `AGENTS.md`, `src/types.js` e `docs/specs/01-foco.md`. Itens **[CONFIRMAR]** estão na seção 14.
 
 ## 1. Objetivo
 Cada **caderno é uma matéria de estudo** (Matemática, Português...). Ele guarda **fontes** (links, vídeos do YouTube e notas),
@@ -13,8 +13,8 @@ e define o **bioma** onde as árvores das sessões de foco daquela matéria vão
 Por isso esta é a tela que **mais desbloqueia as outras**. Entregue a base (criar/listar/escolher bioma) antes das fontes.
 
 ## 2. Regras de negócio
-1. Um caderno tem: nome, bioma e lista de fontes (`Notebook` em `types.ts`).
-2. O **bioma é escolhido pelo usuário** ao criar o caderno, entre `planicie`, `montanha`, `floresta`, `savana` (`BIOMES` em `biomes/config.ts`). **[CONFIRMAR C1]** pode trocar depois?
+1. Um caderno tem: nome, bioma e lista de fontes (`Notebook` em `types.js`).
+2. O **bioma é escolhido pelo usuário** ao criar o caderno, entre `planicie`, `montanha`, `floresta`, `savana` (`BIOMES` em `biomes/config.js`). **[CONFIRMAR C1]** pode trocar depois?
 3. Tipos de fonte: `link`, `youtube` e `note` (`Source`). **Sem upload de arquivos** no MVP (limite de ~5 MB do `localStorage`).
 4. Cada fonte tem título, tags (categorias livres) e conteúdo conforme o tipo: `url` para link/YouTube, `text` para nota.
 5. Excluir caderno exige confirmação mostrando o impacto (tarefas e sessões ligadas). O store já apaga as tarefas do caderno e **desvincula** sessões e árvores (mantém o histórico de foco).
@@ -26,30 +26,46 @@ Por isso esta é a tela que **mais desbloqueia as outras**. Entregue a base (cri
 | `#/cadernos` | `NotebooksPage` | Grade de cards dos cadernos + busca global + botão "Novo caderno". |
 | `#/cadernos/:id` | `NotebookDetailPage` | Fontes do caderno, filtros por tag, adicionar/editar/remover fonte, vídeos incorporados. |
 
-**Ação necessária no `App.tsx`:** adicionar `<Route path="/cadernos/:id" element={<NotebookDetailPage />} />` (combine com quem cuida do layout).
+**Ação necessária no `App.jsx`:** adicionar `<Route path="/cadernos/:id" element={<NotebookDetailPage />} />` (combine com quem cuida do layout).
 
 ## 4. Arquivos a criar
 | Arquivo | O que fazer |
 |---|---|
-| `NotebooksPage.tsx` | Lista, busca, estado vazio ("Crie seu primeiro caderno para começar a plantar."). |
-| `NotebookCard.tsx` | Nome, bioma (cor + nome), nº de fontes, tempo de foco total, nº de árvores, botões **Abrir** e **Focar** (link para `#/foco?notebookId=ID`). |
-| `NotebookForm.tsx` | Criar/renomear (modal). Campos: nome e `BiomePicker`. |
-| `BiomePicker.tsx` | Cards selecionáveis (radio) mostrando nome, cores do bioma e espécies. Navegável por teclado. |
-| `NotebookDetailPage.tsx` | Cabeçalho (nome, bioma, editar, excluir), filtro de tags, lista de fontes, botão "Adicionar fonte". |
-| `SourceForm.tsx` | Modal de fonte: tipo (radio), título, URL ou texto, tags. Validação por tipo. |
-| `SourceCard.tsx` | Exibe a fonte conforme o tipo, com editar e remover. |
-| `YouTubeEmbed.tsx` | `<iframe>` do vídeo (ver seção 7). |
-| `lib/youtube.ts` | `parseYouTubeId(url): string \| null`. |
-| `lib/url.ts` | `safeHttpUrl(input): string \| null` (só `http:` e `https:`). |
-| `lib/search.ts` | `normalize(text)` e `searchNotebooks(notebooks, query)`. |
-| `components/Modal.tsx`, `components/ConfirmDialog.tsx` | Compartilhados (quem cuida do layout). Usar `<dialog>` nativo ou foco preso (focus trap). |
+| `NotebooksPage.jsx` | Lista, busca, estado vazio ("Crie seu primeiro caderno para começar a plantar."). |
+| `NotebookCard.jsx` | Nome, bioma (cor + nome), nº de fontes, tempo de foco total, nº de árvores, botões **Abrir** e **Focar** (link para `#/foco?notebookId=ID`). |
+| `NotebookForm.jsx` | Criar/renomear (modal). Campos: nome e `BiomePicker`. |
+| `BiomePicker.jsx` | Cards selecionáveis (radio) mostrando nome, cores do bioma e espécies. Navegável por teclado. |
+| `NotebookDetailPage.jsx` | Cabeçalho (nome, bioma, editar, excluir), filtro de tags, lista de fontes, botão "Adicionar fonte". |
+| `SourceForm.jsx` | Modal de fonte: tipo (radio), título, URL ou texto, tags. Validação por tipo. |
+| `SourceCard.jsx` | Exibe a fonte conforme o tipo, com editar e remover. |
+| `YouTubeEmbed.jsx` | `<iframe>` do vídeo (ver seção 7). |
+| `lib/youtube.js` | `parseYouTubeId(url): string \| null`. |
+| `lib/url.js` | `safeHttpUrl(input): string \| null` (só `http:` e `https:`). |
+| `lib/search.js` | `normalize(text)` e `searchNotebooks(notebooks, query)`. |
+| `components/Modal.jsx`, `components/ConfirmDialog.jsx` | Compartilhados (quem cuida do layout). Usar `<dialog>` nativo ou foco preso (focus trap). |
 
 ## 5. Mudanças no store (combinar com quem cuida do storage)
-`useStore.ts` já tem `addNotebook`, `updateNotebook` e `removeNotebook`, mas **faltam as ações de fonte**:
-```ts
-addSource: (notebookId: string, s: Omit<Source, 'id'>) => void
-updateSource: (notebookId: string, sourceId: string, patch: Partial<Omit<Source, 'id'>>) => void
-removeSource: (notebookId: string, sourceId: string) => void
+`useStore.js` já tem `addNotebook`, `updateNotebook` e `removeNotebook`, mas **faltam as ações de fonte**:
+```js
+/**
+ * @param {string} notebookId
+ * @param {Omit<import('../types.js').Source, 'id'>} src
+ * @returns {string} id da fonte criada
+ */
+addSource: (notebookId, src) => {}
+
+/**
+ * @param {string} notebookId
+ * @param {string} sourceId
+ * @param {Partial<Omit<import('../types.js').Source, 'id'>>} patch
+ */
+updateSource: (notebookId, sourceId, patch) => {}
+
+/**
+ * @param {string} notebookId
+ * @param {string} sourceId
+ */
+removeSource: (notebookId, sourceId) => {}
 ```
 Regras: gerar `id` com `uid()`; remover tags vazias e duplicadas; **nunca** salvar `url` que não passe em `safeHttpUrl`.
 
@@ -85,7 +101,7 @@ Regras: gerar `id` com `uid()`; remover tags vazias e duplicadas; **nunca** salv
 Formatos de URL a aceitar em `parseYouTubeId`: `youtube.com/watch?v=ID`, `youtu.be/ID`, `youtube.com/shorts/ID`, `youtube.com/embed/ID`, `youtube.com/live/ID`, com ou sem `www.` e `m.`, ignorando parâmetros extras (`&t=`, `?si=`). Se não reconhecer, retorna `null` e o formulário mostra "Link de vídeo do YouTube inválido".
 
 Embed:
-```tsx
+```jsx
 <iframe
   src={`https://www.youtube-nocookie.com/embed/${id}`}
   title={`Vídeo: ${title}`}
@@ -139,7 +155,7 @@ O `localStorage` tem ~5 MB. Notas longas consomem espaço. Sugestões:
 
 ## 13. Dicas para trabalhar com IA
 - Ordem sugerida: (1) `lib/*` com pequenos testes manuais no console; (2) ações de fonte no store; (3) lista/criar caderno; (4) detalhe e fontes; (5) YouTube; (6) busca e tags.
-- Cole `types.ts`, `AGENTS.md` e a seção 8 desta spec no prompt, pois a IA costuma esquecer a validação de URL.
+- Cole `types.js`, `AGENTS.md` e a seção 8 desta spec no prompt, pois a IA costuma esquecer a validação de URL.
 - Peça funções puras para `parseYouTubeId`, `safeHttpUrl` e `normalize`: são fáceis de testar e ótimas para explicar no vídeo.
 
 ## 14. Decisões a confirmar

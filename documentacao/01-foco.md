@@ -1,7 +1,7 @@
 # Spec 01: Foco (cronômetro, árvore e vínculo)
 
 > Responsável: _(definir)_ · Pasta: `src/features/focus/` · Requisitos: RF01 a RF06, RNF01, RNF03, RNF04, RNF05, RNF07
-> Antes de começar, leia `AGENTS.md` e `src/types.ts`. Itens **[CONFIRMAR]** são interpretações minhas das respostas do grupo (seção 14).
+> Antes de começar, leia `AGENTS.md` e `src/types.js`. Itens **[CONFIRMAR]** são interpretações minhas das respostas do grupo (seção 14).
 
 ## 1. Objetivo
 Permitir que o usuário inicie uma sessão de foco de duração escolhida, veja uma árvore crescendo em tempo real e, ao concluir,
@@ -11,11 +11,11 @@ registre a sessão (que alimenta Floresta e Gráficos). A sessão pode ser vincu
 1. Duração escolhida pelo usuário: **mínimo 15 min, máximo 120 min** (presets 15, 25, 45, 60 e 120, mais valor personalizado dentro do intervalo).
 2. Pode **pausar**, **retomar** e **desistir**. **Pausar só é possível depois de 10 min de foco** (`PAUSE_AFTER_MINUTES`); a pausa em si **não tem limite de tempo**. **[CONFIRMAR]**
 3. **Desistir** descarta a sessão e a árvore. Nada é salvo (sem histórico de desistência).
-4. **Fechar ou recarregar a aba** mata a sessão e a árvore. Nada é salvo. Por isso a sessão ativa fica só em memória (já implementado em `useTimer.ts`).
+4. **Fechar ou recarregar a aba** mata a sessão e a árvore. Nada é salvo. Por isso a sessão ativa fica só em memória (já implementado em `useTimer.js`).
 5. Só sessões **concluídas** vão para `sessions` no store.
 6. O tempo é calculado por **diferença de horários** (`Date.now()`), nunca por contagem de ticks do `setInterval` (RNF04).
 7. Vínculo opcional com **tarefa** e/ou **caderno**. Se houver tarefa, o caderno é o da tarefa (toda tarefa pertence a um caderno).
-8. O **bioma** da árvore vem do caderno vinculado. Sem caderno, usa **planície** (`DEFAULT_BIOME`). Cada bioma tem várias espécies (`src/biomes/config.ts`).
+8. O **bioma** da árvore vem do caderno vinculado. Sem caderno, usa **planície** (`DEFAULT_BIOME`). Cada bioma tem várias espécies (`src/biomes/config.js`).
 9. O usuário **escolhe a espécie** antes de iniciar (dentro do bioma).
 10. A árvore tem 4 estágios (`GROWTH_STAGES`: broto, muda, jovem, adulta). **Cada 30 min de foco rendem 1 estágio, arredondando para cima**: 15 min = 1, 45 min = 2, 75 min = 3, 120 min = 4 (função `stagesForMinutes`). **[CONFIRMAR]**
 11. Ao iniciar, o usuário escolhe: **plantar uma árvore nova** ou **continuar evoluindo uma árvore existente** (só aparecem árvores abaixo do estágio 4). Ao concluir, a árvore existente ganha os estágios da sessão (limite 4); a árvore nova nasce com esses estágios.
@@ -24,17 +24,17 @@ registre a sessão (que alimenta Floresta e Gráficos). A sessão pode ser vincu
 ## 3. Arquivos a criar/alterar
 | Arquivo | O que fazer |
 |---|---|
-| `FocusPage.tsx` | Tela principal: estados *ocioso*, *em andamento*, *pausado*, *concluída*. |
-| `useTimer.ts` | Já existe. Pode receber `species` no `start`. Não persistir no storage. |
-| `useSessionWatcher.ts` | **Novo.** Hook que roda no `App.tsx` (não na FocusPage), checa a cada 250 ms se `progress() >= 1` e conclui a sessão. |
-| `DurationPicker.tsx` | Presets + campo personalizado. |
-| `LinkPicker.tsx` | Selects de tarefa e caderno (tarefa define o caderno). |
-| `SpeciesPicker.tsx` | Escolha da espécie dentro do bioma do caderno (ou planície). |
-| `TreePicker.tsx` | **Novo.** Opção "Plantar nova árvore" ou "Continuar uma árvore existente" (lista de árvores com estágio < 4, mostrando espécie, bioma e estágio). Se escolher uma existente, a espécie e o bioma dela são usados e o `SpeciesPicker` fica travado. |
-| `TreeSvg.tsx` | Recebe `species`, `stage` (1..4) e `progress` (0..1) e desenha o SVG. Pasta de arte em `src/biomes/`. |
-| `CompletionDialog.tsx` | Mensagem de conclusão ("Árvore plantada!") com botão para ir à Floresta. |
+| `FocusPage.jsx` | Tela principal: estados *ocioso*, *em andamento*, *pausado*, *concluída*. |
+| `useTimer.js` | Já existe. Pode receber `species` no `start`. Não persistir no storage. |
+| `useSessionWatcher.js` | **Novo.** Hook que roda no `App.jsx` (não na FocusPage), checa a cada 250 ms se `progress() >= 1` e conclui a sessão. |
+| `DurationPicker.jsx` | Presets + campo personalizado. |
+| `LinkPicker.jsx` | Selects de tarefa e caderno (tarefa define o caderno). |
+| `SpeciesPicker.jsx` | Escolha da espécie dentro do bioma do caderno (ou planície). |
+| `TreePicker.jsx` | **Novo.** Opção "Plantar nova árvore" ou "Continuar uma árvore existente" (lista de árvores com estágio < 4, mostrando espécie, bioma e estágio). Se escolher uma existente, a espécie e o bioma dela são usados e o `SpeciesPicker` fica travado. |
+| `TreeSvg.jsx` | Recebe `species`, `stage` (0 a 4, sendo 0 a semente) e `progress` (0..1) e desenha o SVG. Pasta de arte em `src/biomes/trees/`. |
+| `CompletionDialog.jsx` | Mensagem de conclusão ("Árvore plantada!") com botão para ir à Floresta. |
 
-**Por que o watcher no `App.tsx`:** o usuário pode navegar para Tarefas ou Cadernos durante a sessão. Se a conclusão dependesse da FocusPage montada,
+**Por que o watcher no `App.jsx`:** o usuário pode navegar para Tarefas ou Cadernos durante a sessão. Se a conclusão dependesse da FocusPage montada,
 a sessão nunca fecharia. O estado do timer é global (Zustand), então o watcher deve ser global também.
 
 ## 4. Estados da tela
@@ -84,7 +84,7 @@ a sessão nunca fecharia. O estado do timer é global (Zustand), então o watche
 | Aba em segundo plano | O tempo continua correto (diferença de horários). |
 | Computador dormiu e acordou | **Decidido:** não conta como aba fechada. Pelo cálculo por horário a sessão continua e, se o tempo já passou, conclui ao acordar (o watcher roda em seguida). |
 | Navegar para outra tela | A sessão continua; o watcher global conclui; mostrar aviso/ícone no menu enquanto ativa. |
-| Fechar/recarregar a aba | Aviso do navegador (`beforeunload`, já em `App.tsx`). Se confirmar, sessão e árvore se perdem. |
+| Fechar/recarregar a aba | Aviso do navegador (`beforeunload`, já em `App.jsx`). Se confirmar, sessão e árvore se perdem. |
 | Tarefa ou caderno excluídos durante a sessão | Concluir normalmente, salvando o vínculo se ainda existir; senão sem vínculo. |
 | Duas abas abertas | **Não suportado** (decidir se vale avisar). As sessões são independentes em memória; o `localStorage` é compartilhado, então cuidado com sobrescrita. |
 | `StrictMode` em dev | Efeitos rodam duas vezes: o watcher deve ser idempotente (não pode adicionar a sessão duas vezes). Use a flag `active` como trava. |
@@ -99,7 +99,7 @@ a sessão nunca fecharia. O estado do timer é global (Zustand), então o watche
 
 ## 9. Árvore (SVG)
 - Um componente por espécie ou um componente parametrizável (`TreeSvg`) com paleta por espécie.
-- Entrada: `species: string`, `stage: 0|1|2|3`, `progress: number`.
+- Entrada: `species: string`, `stage: 0|1|2|3|4`, `progress: number`.
 - Entrega mínima (MVP): 1 espécie por bioma × 4 estágios, em SVG. Depois, as demais espécies.
 - Pedir à IA: "SVG de um pinheiro em 4 estágios de crescimento, viewBox 0 0 200 200, paleta verde/azul calma, sem texto, formas simples, sem gradientes pesados".
 - A arte deve ficar em `src/biomes/trees/`, para reaproveitar na Floresta.
@@ -125,11 +125,11 @@ Para testar sem esperar 15 min, use uma constante `DEV_SPEED = 60` (relógio 60x
 ## 12. Dependências com outras telas
 - **Tarefas/Cadernos** fornecem as listas para os selects (via `useStore`).
 - **Floresta/Gráficos** leem `sessions`; `species` e `biome` precisam estar corretos aqui.
-- Mudou o formato de `Session` em `types.ts`? Avise Floresta e Gráficos.
+- Mudou o formato de `Session` em `types.js`? Avise Floresta e Gráficos.
 
 ## 13. Dicas para trabalhar com IA
 - Peça um arquivo por vez (primeiro `useSessionWatcher`, depois `DurationPicker`, e assim por diante).
-- Sempre cole `AGENTS.md` e `types.ts` no início do prompt.
+- Sempre cole `AGENTS.md` e `types.js` no início do prompt.
 - Revise o cálculo de tempo manualmente: a IA costuma voltar para contagem por `setInterval`.
 - Cada integrante deve conseguir explicar no vídeo **por que** o tempo é por diferença de horários e **por que** o watcher é global.
 

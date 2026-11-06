@@ -7,8 +7,8 @@ import DurationPicker from './DurationPicker'
 import LinkPicker from './LinkPicker'
 import SpeciesPicker from './SpeciesPicker'
 import TreePicker from './TreePicker'
-import TreeSvg from './TreeSvg'
-import CompletionDialog from './CompletionDialog'
+import TreeSvg from '../../biomes/trees/TreeSvg'
+import ConfirmDialog from '../../components/ConfirmDialog'
 import './focus.css'
 
 const fmt = (totalSeconds) =>
@@ -36,7 +36,7 @@ export default function FocusPage() {
   const [error, setError] = useState(null)
   const [confirmGiveUp, setConfirmGiveUp] = useState(false)
 
-  const { active, pausedAt, minutes, justCompleted } = timer
+  const { active, pausedAt, minutes } = timer
 
   // Re-render visual a cada 250 ms; o valor vem sempre de Date.now(), nunca do tick.
   const [, setTick] = useState(0)
@@ -58,16 +58,6 @@ export default function FocusPage() {
       document.title = 'Grove'
     }
   }, [active, minutes])
-
-  // Esc fecha o diálogo de desistir.
-  useEffect(() => {
-    if (!confirmGiveUp) return
-    const onKey = (e) => {
-      if (e.key === 'Escape') setConfirmGiveUp(false)
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [confirmGiveUp])
 
   // ----- Estado ocioso: derivados -----
   const chosenTree = treeChoice === 'new' ? undefined : trees.find((t) => t.id === treeChoice)
@@ -129,7 +119,6 @@ export default function FocusPage() {
     return (
       <section className="focus-page">
         <h1>Foco</h1>
-        {justCompleted && <CompletionDialog result={justCompleted} onClose={timer.clearCompleted} />}
         <form
           className="focus-setup"
           onSubmit={(e) => {
@@ -216,22 +205,15 @@ export default function FocusPage() {
         </button>
       </div>
 
-      {confirmGiveUp && (
-        <div className="dialog-backdrop" role="presentation">
-          <div className="dialog" role="alertdialog" aria-modal="true" aria-labelledby="giveup-title">
-            <h2 id="giveup-title">Desistir da sessão?</h2>
-            <p>Se desistir, a árvore morre e a sessão não será salva. Continuar?</p>
-            <div className="dialog-actions">
-              <button type="button" className="focus-giveup" onClick={onGiveUp}>
-                Sim, desistir
-              </button>
-              <button type="button" autoFocus onClick={() => setConfirmGiveUp(false)}>
-                Continuar focando
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmDialog
+        open={confirmGiveUp}
+        danger
+        title="Desistir da sessão?"
+        message="Se desistir, a árvore morre e a sessão não será salva. Continuar?"
+        confirmLabel="Sim, desistir"
+        onConfirm={onGiveUp}
+        onCancel={() => setConfirmGiveUp(false)}
+      />
     </section>
   )
 }
