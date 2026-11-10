@@ -1,6 +1,7 @@
 import { HashRouter, NavLink, Route, Routes, Navigate } from 'react-router-dom'
 import FocusPage from './features/focus/FocusPage'
 import ForestPage from './features/forest/ForestPage'
+import BiomeScenePage from './features/forest/BiomeScenePage'
 import StatsPage from './features/stats/StatsPage'
 import TasksPage from './features/tasks/TasksPage'
 import NotebooksPage from './features/notebooks/NotebooksPage'
@@ -60,6 +61,7 @@ export default function App() {
           <Route path="/" element={<Navigate to="/foco" replace />} />
           <Route path="/foco" element={<FocusPage />} />
           <Route path="/floresta" element={<ForestPage />} />
+          <Route path="/floresta/:biome" element={<BiomeScenePage />} />
           <Route path="/graficos" element={<StatsPage />} />
           <Route path="/tarefas" element={<TasksPage />} />
           <Route path="/cadernos" element={<NotebooksPage />} />

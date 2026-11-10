@@ -1,0 +1,51 @@
+/* Floresta: resumo por bioma e cena. Só tokens (cores de bioma vêm de biomes/config.js). */
+.forest-page { display: flex; flex-direction: column; gap: 16px; padding-bottom: 32px; }
+.forest-page h1 { margin: 0; }
+
+.forest-nav { display: flex; flex-wrap: wrap; gap: 6px; }
+.forest-nav a {
+  display: inline-flex; align-items: center; min-height: 44px; padding: 8px 14px;
+  border: 1px solid var(--border); border-radius: var(--radius);
+  background: var(--surface); color: var(--text); text-decoration: none; font-weight: 600;
+}
+.forest-nav a.active { background: var(--primary); border-color: var(--primary); color: var(--primary-contrast); }
+
+.forest-empty { margin: 0; }
+.forest-empty a { color: var(--accent); }
+
+.forest-grid-cards {
+  list-style: none; margin: 0; padding: 0; display: grid; gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+}
+.forest-card {
+  display: flex; flex-direction: column; gap: 8px; padding: 14px 16px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+}
+.forest-card-head { display: flex; align-items: center; gap: 8px; }
+.forest-card-title { margin: 0; font-size: 1.1rem; }
+.forest-swatch {
+  flex: none; width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--border);
+  background: linear-gradient(to bottom, var(--biome-sky) 55%, var(--biome-ground) 55%);
+}
+.forest-card-stats {
+  list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 14px;
+  color: var(--text-muted); font-size: 0.92rem;
+}
+.forest-open {
+  margin-top: auto; display: inline-flex; align-items: center; justify-content: center;
+  min-height: 44px; padding: 8px 14px; border-radius: var(--radius);
+  background: var(--primary); color: var(--primary-contrast); text-decoration: none; font-weight: 600;
+}
+
+.forest-grid {
+  list-style: none; margin: 0; padding: 0; display: grid; gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+}
+.forest-figure { margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.forest-grid .tree-svg { width: 100%; max-width: 200px; }
+.forest-figure figcaption {
+  display: flex; flex-direction: column; gap: 2px; font-size: 0.9rem; color: var(--text-muted);
+  overflow-wrap: anywhere;
+}
+.forest-figure figcaption strong { color: var(--text); }
+.forest-more { align-self: center; min-height: 44px; min-width: 160px; }
