@@ -8,6 +8,7 @@ import NotebooksPage from './features/notebooks/NotebooksPage'
 import NotebookDetailPage from './features/notebooks/NotebookDetailPage'
 import CompletionDialog from './features/focus/CompletionDialog'
 import BackupButtons from './components/BackupButtons'
+import StorageWarning from './components/StorageWarning'
 import { useTimer } from './features/focus/useTimer'
 import { useSessionWatcher } from './features/focus/useSessionWatcher'
 import { useEffect } from 'react'
@@ -56,6 +57,7 @@ export default function App() {
         </nav>
         <BackupButtons />
       </header>
+      <StorageWarning />
       <main>
         <Routes>
           <Route path="/" element={<Navigate to="/foco" replace />} />

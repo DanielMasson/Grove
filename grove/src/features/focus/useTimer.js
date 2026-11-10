@@ -8,10 +8,6 @@ export const MIN_MINUTES = 15
 export const MAX_MINUTES = 120
 export const PAUSE_AFTER_MINUTES = 10
 
-// Relógio acelerado só em dev, para testar sem esperar 15 min (spec 01, seção 11).
-// Em produção import.meta.env.DEV é false e o multiplicador vira 1.
-const DEV_SPEED = import.meta.env.DEV ? 60 : 1
-
 /**
  * @typedef {Object} SessionLink
  * @property {string} [taskId]
@@ -70,7 +66,7 @@ export const useTimer = create((set, get) => ({
     const s = get()
     if (!s.active) return 0
     const now = s.pausedAt ?? Date.now()
-    return Math.max(0, now - s.startedAt - s.pausedTotal) * DEV_SPEED
+    return Math.max(0, now - s.startedAt - s.pausedTotal)
   },
   progress: () => {
     const s = get()

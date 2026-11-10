@@ -1,0 +1,7 @@
+.storage-warning {
+  display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; justify-content: space-between;
+  padding: 10px 16px; background: var(--surface); color: var(--text);
+  border-bottom: 3px solid var(--danger);
+}
+.storage-warning p { margin: 0; flex: 1 1 320px; }
+.storage-warning button { min-height: 44px; }

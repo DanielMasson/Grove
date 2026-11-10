@@ -1,0 +1,11 @@
+/* Gráficos: só tokens. */
+.stats-page { display: flex; flex-direction: column; gap: 12px; padding-bottom: 32px; }
+.stats-page h1, .stats-title { margin: 0; }
+.stats-title { font-size: 1.1rem; }
+.stats-views { display: flex; flex-wrap: wrap; gap: 8px; }
+.stats-views .preset { min-height: 44px; min-width: 80px; }
+.stats-chart { position: relative; width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; }
+.stats-table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--border); }
+.stats-table caption { text-align: left; font-weight: 600; padding: 8px 0; }
+.stats-table th, .stats-table td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--border); overflow-wrap: anywhere; }
+.stats-table thead th { background: var(--bg); }
