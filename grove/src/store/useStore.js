@@ -27,9 +27,9 @@ export const uid = () => crypto.randomUUID()
  */
 
 const defaultColumns = [
-  { id: 'todo', name: 'A fazer', order: 0 },
-  { id: 'doing', name: 'Em andamento', order: 1 },
-  { id: 'done', name: 'Concluído', order: 2 },
+  { id: 'todo', name: 'A fazer', order: 0, isDone: false },
+  { id: 'doing', name: 'Em andamento', order: 1, isDone: false },
+  { id: 'done', name: 'Concluído', order: 2, isDone: true },
 ]
 
 /** @type {import('../types.js').AppData} */
@@ -70,6 +70,53 @@ function sanitize(d) {
   const sessions = (d.sessions ?? [])
     .filter((x) => x && isStr(x.id) && Number.isFinite(x.minutes) && biomeOk(x.biome))
   return { notebooks, trees, sessions }
+}
+
+const PRIORITIES = ['baixa', 'media', 'alta']
+const DUE_DATE_RE = /^\d{4}-\d{2}-\d{2}$/
+
+/**
+ * Garante um Column utilizável. Backups antigos (schemaVersion 1 sem `isDone`)
+ * mantêm a coluna `done` como conclusão.
+ * @param {unknown} x
+ * @returns {import('../types.js').Column | null}
+ */
+function sanitizeColumn(x) {
+  if (!x || !isStr(x.id) || !isStr(x.name)) return null
+  const name = x.name.trim()
+  if (!name) return null
+  return {
+    id: x.id,
+    name,
+    order: Number.isFinite(x.order) ? x.order : 0,
+    isDone: x.isDone === true || (x.isDone === undefined && x.id === 'done'),
+  }
+}
+
+/**
+ * Garante uma Task utilizável. Título é obrigatório; `notebookId` só entra se o
+ * caderno existir (dados antigos podem vir sem caderno — a tela mostra "Sem caderno").
+ * @param {unknown} x
+ * @param {Set<string>} notebookIds
+ * @param {Set<string>} columnIds
+ * @returns {import('../types.js').Task | null}
+ */
+function sanitizeTask(x, notebookIds, columnIds) {
+  if (!x || !isStr(x.id) || !isStr(x.columnId) || !columnIds.has(x.columnId)) return null
+  const title = isStr(x.title) ? x.title.trim() : ''
+  if (!title) return null
+  /** @type {import('../types.js').Task} */
+  const task = {
+    id: x.id,
+    title,
+    description: isStr(x.description) ? x.description : '',
+    priority: PRIORITIES.includes(x.priority) ? x.priority : 'media',
+    columnId: x.columnId,
+    order: Number.isFinite(x.order) ? x.order : 0,
+  }
+  if (isStr(x.dueDate) && DUE_DATE_RE.test(x.dueDate)) task.dueDate = x.dueDate
+  if (isStr(x.notebookId) && notebookIds.has(x.notebookId)) task.notebookId = x.notebookId
+  return task
 }
 
 export const useStore = create()(
@@ -142,12 +189,29 @@ export const useStore = create()(
           ),
         })),
 
-      addColumn: (name) =>
-        set((s) => ({ columns: [...s.columns, { id: uid(), name, order: s.columns.length }] })),
-      renameColumn: (id, name) =>
-        set((s) => ({ columns: s.columns.map((c) => (c.id === id ? { ...c, name } : c)) })),
+      addColumn: (name) => {
+        const trimmed = String(name ?? '').trim()
+        if (!trimmed) throw new Error('O nome da coluna não pode ficar vazio.')
+        const id = uid()
+        set((s) => ({
+          columns: [
+            ...s.columns,
+            { id, name: trimmed, order: Math.max(-1, ...s.columns.map((c) => c.order)) + 1, isDone: false },
+          ],
+        }))
+        return id
+      },
+      renameColumn: (id, name) => {
+        const trimmed = String(name ?? '').trim()
+        if (!trimmed) throw new Error('O nome da coluna não pode ficar vazio.')
+        set((s) => ({ columns: s.columns.map((c) => (c.id === id ? { ...c, name: trimmed } : c)) }))
+      },
+      // Marca `id` como coluna de conclusão (as outras ficam normais). null = nenhuma.
+      setDoneColumn: (id) =>
+        set((s) => ({ columns: s.columns.map((c) => ({ ...c, isDone: c.id === id })) })),
       removeColumn: (id) =>
         set((s) => {
+          if (s.columns.length <= 1) return s // nunca remover a última coluna
           const removed = new Set(s.tasks.filter((t) => t.columnId === id).map((t) => t.id))
           return {
             columns: s.columns.filter((c) => c.id !== id),
@@ -158,7 +222,12 @@ export const useStore = create()(
 
       addTask: (t) => {
         const id = uid()
-        set((s) => ({ tasks: [...s.tasks, { ...t, id, order: s.tasks.length }] }))
+        set((s) => {
+          // Ordem sempre dentro da coluna de destino: último + 1.
+          const inColumn = s.tasks.filter((x) => x.columnId === t.columnId)
+          const order = inColumn.reduce((max, x) => Math.max(max, x.order), -1) + 1
+          return { tasks: [...s.tasks, { ...t, id, order }] }
+        })
         return id
       },
       updateTask: (id, patch) =>
@@ -168,6 +237,27 @@ export const useStore = create()(
           tasks: s.tasks.filter((t) => t.id !== id),
           sessions: s.sessions.map((x) => (x.taskId === id ? { ...x, taskId: undefined } : x)),
         })),
+
+      // Move a tarefa e reindexa `order` das colunas afetadas (spec 03, seção 3).
+      moveTask: (taskId, toColumnId, toIndex) =>
+        set((s) => {
+          const task = s.tasks.find((t) => t.id === taskId)
+          if (!task || !s.columns.some((c) => c.id === toColumnId)) return s
+          const byOrder = (a, b) => a.order - b.order
+          const others = s.tasks.filter((t) => t.id !== taskId)
+          const fromColumnId = task.columnId
+          const fromTasks = others.filter((t) => t.columnId === fromColumnId).sort(byOrder)
+          const toTasks = others.filter((t) => t.columnId === toColumnId).sort(byOrder)
+          const index = Math.max(0, Math.min(toIndex, toTasks.length))
+          const nextTo = [...toTasks.slice(0, index), { ...task, columnId: toColumnId }, ...toTasks.slice(index)]
+
+          /** @type {Map<string, { order: number, columnId?: string }>} */
+          const updates = new Map()
+          nextTo.forEach((t, i) => updates.set(t.id, { order: i, columnId: toColumnId }))
+          if (fromColumnId !== toColumnId) fromTasks.forEach((t, i) => updates.set(t.id, { order: i }))
+
+          return { tasks: s.tasks.map((t) => (updates.has(t.id) ? { ...t, ...updates.get(t.id) } : t)) }
+        }),
 
       addSession: (x) =>
         set((s) => ({ sessions: [...s.sessions, { ...x, id: uid(), completedAt: new Date().toISOString() }] })),
@@ -239,19 +329,30 @@ export const useStore = create()(
         try { d = JSON.parse(json) } catch { throw new Error('O arquivo não é um JSON válido.') }
         if (!d || d.schemaVersion !== 1) throw new Error('Arquivo de backup inválido ou de outra versão.')
         const { notebooks, trees, sessions } = sanitize(d)
-        set({
-          notebooks,
-          columns: Array.isArray(d.columns) && d.columns.length ? d.columns : defaultColumns,
-          tasks: Array.isArray(d.tasks) ? d.tasks : [],
-          sessions,
-          trees,
-        })
+
+        const rawColumns = Array.isArray(d.columns) ? d.columns.map(sanitizeColumn).filter(Boolean) : []
+        const columns = rawColumns.length ? rawColumns : defaultColumns
+        const columnIds = new Set(columns.map((c) => c.id))
+        const notebookIds = new Set(notebooks.map((n) => n.id))
+        const tasks = (Array.isArray(d.tasks) ? d.tasks : [])
+          .map((t) => sanitizeTask(t, notebookIds, columnIds))
+          .filter(Boolean)
+
+        set({ notebooks, columns, tasks, sessions, trees })
       },
       resetData: () => set({ ...initialData }),
     }),
     {
       name: 'grove:v1',
-      version: 1,
+      // v2: Column ganhou `isDone` (spec 03, C1). Dados antigos mantêm `done` como conclusão.
+      version: 2,
+      migrate: (persisted, version) => {
+        if (!persisted || version >= 2 || !Array.isArray(persisted.columns)) return persisted
+        return {
+          ...persisted,
+          columns: persisted.columns.map((c) => ({ ...c, isDone: c.isDone ?? c.id === 'done' })),
+        }
+      },
       partialize: (s) => ({
         schemaVersion: s.schemaVersion,
         notebooks: s.notebooks,

@@ -1,9 +1,8 @@
 import { Link } from 'react-router-dom'
 import { useStore } from '../../store/useStore'
+import { isDoneTask } from '../../lib/kanban'
 
-// Tarefas na coluna "Concluído" não servem para foco.
-const isDoneTask = (columnId, columns) =>
-  columns.some((c) => c.id === columnId && (c.id === 'done' || c.name === 'Concluído'))
+// Tarefas na coluna de conclusão não servem para foco (regra central em lib/kanban.js).
 
 export default function LinkPicker({ taskId, notebookId, onChange, disabled }) {
   const tasks = useStore((s) => s.tasks)
@@ -13,7 +12,7 @@ export default function LinkPicker({ taskId, notebookId, onChange, disabled }) {
   const selectedTask = tasks.find((t) => t.id === taskId)
   const taskLockedNotebook = Boolean(selectedTask?.notebookId)
 
-  const availableTasks = tasks.filter((t) => !isDoneTask(t.columnId, columns))
+  const availableTasks = tasks.filter((t) => !isDoneTask(t, columns))
 
   const onTaskChange = (id) => {
     if (!id) {

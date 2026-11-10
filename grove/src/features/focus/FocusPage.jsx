@@ -27,9 +27,17 @@ export default function FocusPage() {
   // Configuração da próxima sessão (só enquanto ocioso).
   const [duration, setDuration] = useState('25')
   const [link, setLink] = useState(() => {
-    const presetNotebook = searchParams.get('notebookId') ?? undefined
-    const exists = presetNotebook && useStore.getState().notebooks.some((n) => n.id === presetNotebook)
-    return { notebookId: exists ? presetNotebook : undefined }
+    // Pré-seleção vindo de outra tela: #/foco?notebookId=ID e/ou ?taskId=ID (spec 03).
+    const state = useStore.getState()
+    const presetTaskId = searchParams.get('taskId') ?? undefined
+    const task = presetTaskId ? state.tasks.find((t) => t.id === presetTaskId) : undefined
+    const presetNotebookId = searchParams.get('notebookId') ?? undefined
+    const notebookId =
+      task?.notebookId ??
+      (presetNotebookId && state.notebooks.some((n) => n.id === presetNotebookId)
+        ? presetNotebookId
+        : undefined)
+    return { taskId: task?.id, notebookId }
   })
   const [treeChoice, setTreeChoice] = useState('new')
   const [speciesState, setSpeciesState] = useState('')

@@ -1,0 +1,256 @@
+/* Cadernos: grade de cards, bioma com swatch, detalhe. Só usa tokens de tokens.css. */
+
+.notebooks-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-bottom: 32px;
+}
+
+.nb-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.nb-header h1 {
+  margin: 0;
+}
+
+.nb-header button {
+  min-height: 44px;
+}
+
+.nb-search input,
+.nb-form input[type='text'] {
+  font: inherit;
+  padding: 10px 12px;
+  min-height: 44px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  width: 100%;
+}
+
+.nb-search {
+  max-width: 420px;
+}
+
+/* Grade: 1 coluna no celular, 2 a 3 no desktop */
+.nb-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+.nb-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+}
+
+.nb-card-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nb-card-title {
+  margin: 0;
+  font-size: 1.1rem;
+  overflow-wrap: anywhere;
+}
+
+.nb-card-biome {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.nb-card-stats {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  color: var(--text-muted);
+  font-size: 0.92rem;
+}
+
+.nb-card-source {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.nb-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: auto;
+}
+
+.nb-actions a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  min-width: 96px;
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.nb-actions a.nb-focus {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--primary-contrast);
+}
+
+/* Amostra de cor do bioma (cores vêm de biomes/config.js, não de tokens) */
+.biome-swatch {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: linear-gradient(to bottom, var(--biome-sky) 55%, var(--biome-ground) 55%);
+}
+
+/* BiomaPicker (radio cards) */
+.biome-picker {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  padding: 10px 14px 14px;
+  margin: 12px 0 0;
+}
+
+.biome-picker legend {
+  padding: 0 6px;
+  font-weight: 600;
+}
+
+.biome-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.biome-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  min-height: 44px;
+  cursor: pointer;
+  background: var(--surface);
+}
+
+.biome-card:focus-within {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.biome-card input {
+  flex: none;
+  margin: 0;
+  width: 18px;
+  height: 18px;
+}
+
+.biome-card .biome-swatch {
+  flex: none;
+}
+
+.biome-card-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.biome-card-name {
+  font-weight: 600;
+}
+
+.biome-card-species {
+  margin: 0;
+}
+
+.biome-card.active {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: var(--primary-contrast);
+}
+
+.biome-card.active .biome-card-species,
+.biome-card.active .hint {
+  color: var(--primary-contrast);
+}
+
+/* Detalhe */
+.nb-detail-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nb-detail-title h1 {
+  overflow-wrap: anywhere;
+}
+
+.nb-detail-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.nb-detail-actions button {
+  min-height: 44px;
+  min-width: 96px;
+}
+
+.nb-empty {
+  text-align: center;
+  padding: 24px 0;
+  color: var(--text-muted);
+}
+
+.nb-empty button {
+  min-height: 44px;
+  margin-top: 8px;
+}
+
+@media (max-width: 480px) {
+  .nb-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .nb-header button {
+    width: 100%;
+  }
+
+  .nb-detail-actions {
+    width: 100%;
+  }
+
+  .nb-detail-actions button {
+    flex: 1;
+  }
+}

@@ -33,6 +33,8 @@
  * @property {string} id
  * @property {string} name
  * @property {number} order
+ * @property {boolean} [isDone] true na coluna de conclusão: o Foco esconde as tarefas dela.
+ *   Pode ser renomeada/removida (C1 livre); use `isDoneColumn` em `src/lib/kanban.js`.
  */
 
 /**
@@ -43,8 +45,9 @@
  * @property {string} [dueDate] YYYY-MM-DD
  * @property {Priority} priority
  * @property {string} columnId
- * @property {string} [notebookId]
- * @property {number} order
+ * @property {string} [notebookId] obrigatório em tarefas novas (o formulário exige);
+ *   dados antigos/importados podem vir sem e aparecem como "Sem caderno"
+ * @property {number} order ordem dentro da coluna (0 = topo)
  */
 
 /**
