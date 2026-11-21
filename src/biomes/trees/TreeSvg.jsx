@@ -1,4 +1,4 @@
-import { BIOMES, GROWTH_STAGES, MAX_STAGES } from '../config'
+import { BIOMES, DEFAULT_BIOME, GROWTH_STAGES, MAX_STAGES } from '../config'
 import './tree.css'
 
 /**
@@ -140,7 +140,8 @@ function TreeBody({ p, g }) {
 /** @param {TreeSvgProps} props */
 export default function TreeSvg({ biome, species, stage, progress, className }) {
   const p = PALETTES[species] ?? FALLBACK
-  const biomeColors = BIOMES[biome].colors
+  const biomeData = BIOMES[biome] ?? BIOMES[DEFAULT_BIOME]
+  const biomeColors = biomeData.colors
   const s = Math.max(0, Math.min(MAX_STAGES, stage))
   const frac = Math.max(0, Math.min(1, progress))
 
@@ -177,7 +178,7 @@ export default function TreeSvg({ biome, species, stage, progress, className }) 
     body = <TreeBody p={p} g={g} />
   }
 
-  const name = BIOMES[biome].species.find((sp) => sp.id === species)?.name ?? species
+  const name = biomeData.species.find((sp) => sp.id === species)?.name ?? species
 
   return (
     <svg

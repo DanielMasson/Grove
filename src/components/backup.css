@@ -1,0 +1,10 @@
+.backup { flex-wrap: wrap; align-items: center; }
+.backup button { min-height: 44px; }
+.backup-more { position: relative; }
+.backup-more summary { min-height: 44px; display: inline-flex; align-items: center; padding: 8px 12px; cursor: pointer;
+  border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); color: var(--text); list-style: none; }
+.backup-more summary::-webkit-details-marker { display: none; }
+.backup-more summary:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.backup-more-menu { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; padding: 10px; position: absolute; right: 0; z-index: 5;
+  min-width: 220px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
+.backup .backup-status { flex-basis: 100%; margin: 0; }

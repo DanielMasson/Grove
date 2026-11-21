@@ -6,9 +6,12 @@ import { BIOMES, DEFAULT_BIOME, GROWTH_STAGES, MAX_STAGES, stagesForMinutes } fr
 import DurationPicker from './DurationPicker'
 import LinkPicker from './LinkPicker'
 import SpeciesPicker from './SpeciesPicker'
+import DailyGoalCard from './DailyGoalCard'
+import CompletionAlertsPicker from './CompletionAlertsPicker'
 import TreePicker from './TreePicker'
 import TreeSvg from '../../biomes/trees/TreeSvg'
 import ConfirmDialog from '../../components/ConfirmDialog'
+import { isDoneTask } from '../../lib/kanban'
 import './focus.css'
 
 const fmt = (totalSeconds) =>
@@ -21,6 +24,7 @@ export default function FocusPage() {
   const timer = useTimer()
   const tasks = useStore((s) => s.tasks)
   const notebooks = useStore((s) => s.notebooks)
+  const columns = useStore((s) => s.columns)
   const trees = useStore((s) => s.trees)
   const [searchParams] = useSearchParams()
 
@@ -41,7 +45,8 @@ export default function FocusPage() {
   })
   const [treeChoice, setTreeChoice] = useState('new')
   const [speciesState, setSpeciesState] = useState('')
-  const [error, setError] = useState(null)
+  const [durationError, setDurationError] = useState(null)
+  const [formError, setFormError] = useState(null)
   const [confirmGiveUp, setConfirmGiveUp] = useState(false)
 
   const { active, pausedAt, minutes } = timer
@@ -100,14 +105,29 @@ export default function FocusPage() {
     const value = duration.trim()
     const n = Number(value)
     if (!/^\d+$/.test(value) || n < MIN_MINUTES || n > MAX_MINUTES) {
-      setError(`Informe um número inteiro entre ${MIN_MINUTES} e ${MAX_MINUTES} minutos.`)
+      setDurationError(`Informe um número inteiro entre ${MIN_MINUTES} e ${MAX_MINUTES} minutos.`)
       return
     }
+    setDurationError(null)
+
+    // Vínculo velho: a tarefa pode ter sido excluída ou movida para a coluna de conclusão.
+    if (link.taskId) {
+      const task = tasks.find((t) => t.id === link.taskId)
+      if (!task || isDoneTask(task, columns)) {
+        setLink({
+          taskId: undefined,
+          notebookId: notebooks.some((nb) => nb.id === link.notebookId) ? link.notebookId : undefined,
+        })
+        setFormError('A tarefa escolhida não está mais disponível.')
+        return
+      }
+    }
+
     if (!chosenTree && !species) {
-      setError('Escolha uma espécie para plantar.')
+      setFormError('Escolha uma espécie para plantar.')
       return
     }
-    setError(null)
+    setFormError(null)
     timer.start(n, {
       biome,
       species,
@@ -120,7 +140,8 @@ export default function FocusPage() {
   const onGiveUp = () => {
     timer.giveUp()
     setConfirmGiveUp(false)
-    setError(null)
+    setDurationError(null)
+    setFormError(null)
   }
 
   if (!active) {
@@ -134,16 +155,31 @@ export default function FocusPage() {
             onStart()
           }}
         >
-          <DurationPicker value={duration} onChange={(v) => { setDuration(v); setError(null) }} error={error ?? undefined} />
-          <LinkPicker taskId={link.taskId} notebookId={link.notebookId} onChange={setLink} />
-          <TreePicker value={effectiveTreeChoice} onChange={setTreeChoice} />
+          <DurationPicker
+            value={duration}
+            onChange={(v) => { setDuration(v); setDurationError(null) }}
+            error={durationError ?? undefined}
+          />
+          <DailyGoalCard />
+          <LinkPicker
+            taskId={link.taskId}
+            notebookId={link.notebookId}
+            onChange={(next) => { setLink(next); setFormError(null) }}
+          />
+          <TreePicker value={effectiveTreeChoice} onChange={(v) => { setTreeChoice(v); setFormError(null) }} />
           <SpeciesPicker
             biome={biome}
             species={species}
-            onChange={setSpeciesState}
+            onChange={(v) => { setSpeciesState(v); setFormError(null) }}
             locked={Boolean(chosenTree)}
             lockReason="Espécie e bioma seguem a árvore escolhida."
           />
+          {formError && (
+            <p className="field-error" role="alert">
+              {formError}
+            </p>
+          )}
+          <CompletionAlertsPicker />
           <button type="submit" className="button-primary focus-start">
             🌱 Plantar
           </button>

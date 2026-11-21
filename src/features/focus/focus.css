@@ -209,3 +209,40 @@
     max-width: none;
   }
 }
+
+/* Meta diária e avisos ao terminar */
+.goal-progress {
+  margin-top: 12px;
+}
+
+.goal-progress progress {
+  width: 100%;
+  height: 14px;
+  accent-color: var(--primary);
+}
+
+.alerts-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin-top: 8px;
+}
+
+.alerts-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  cursor: pointer;
+}
+
+.alerts-option input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+}
+
+.alerts-enable {
+  min-height: 44px;
+  margin-top: 4px;
+}

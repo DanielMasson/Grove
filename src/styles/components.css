@@ -121,3 +121,27 @@ dialog.modal::backdrop {
 dialog.modal h2 {
   margin: 0 0 12px;
 }
+
+/* Corpo centralizado dentro de um Modal (diálogo de conclusão) */
+.dialog-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: center;
+}
+
+.dialog-body p {
+  margin: 0;
+}
+
+.dialog-actions a.button-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  min-width: 120px;
+  padding: 8px 14px;
+  border: 1px solid var(--primary);
+  border-radius: var(--radius);
+  text-decoration: none;
+}

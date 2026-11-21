@@ -78,6 +78,16 @@
  */
 
 /**
+ * Preferências do usuário (persistidas e exportadas no backup).
+ *
+ * @typedef {Object} Settings
+ * @property {'system' | 'light' | 'dark'} theme
+ * @property {number | null} dailyGoalMinutes meta diária em min (15 a 600; null = sem meta)
+ * @property {boolean} notifyOnComplete notificação do navegador ao terminar a sessão
+ * @property {boolean} soundOnComplete tom curto ao terminar a sessão
+ */
+
+/**
  * @typedef {Object} AppData
  * @property {1} schemaVersion
  * @property {Notebook[]} notebooks
@@ -85,6 +95,7 @@
  * @property {Task[]} tasks
  * @property {Session[]} sessions
  * @property {Tree[]} trees
+ * @property {Settings} [settings] opcional: backups antigos não têm; cai no padrão ao importar
  */
 
 export {}

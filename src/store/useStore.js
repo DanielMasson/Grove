@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { createJSONStorage, persist } from 'zustand/middleware'
 import { BIOMES, MAX_STAGES, stagesForMinutes } from '../biomes/config'
 import { safeHttpUrl } from '../lib/url'
 
@@ -16,6 +16,7 @@ export const uid = () => crypto.randomUUID()
  * @property {import('../types.js').BiomeId} biome
  * @property {string} species
  * @property {string} [treeId] só se o usuário escolheu evoluir uma árvore existente
+ * @property {string} [completedAt] ISO do término real da sessão (ignorado se inválido ou no futuro)
  */
 
 /**
@@ -32,6 +33,14 @@ const defaultColumns = [
   { id: 'done', name: 'Concluído', order: 2, isDone: true },
 ]
 
+/** @type {import('../types.js').Settings} */
+export const defaultSettings = {
+  theme: 'system',
+  dailyGoalMinutes: null,
+  notifyOnComplete: false,
+  soundOnComplete: false,
+}
+
 /** @type {import('../types.js').AppData} */
 const initialData = {
   schemaVersion: 1,
@@ -40,6 +49,39 @@ const initialData = {
   tasks: [],
   sessions: [],
   trees: [],
+  settings: defaultSettings,
+}
+
+// Storage próprio: avisa a tela (StorageWarning) quando não dá para gravar (cota cheia ou bloqueado).
+let storageFailing = false
+const safeStorage = {
+  getItem: (k) => {
+    try {
+      return localStorage.getItem(k)
+    } catch {
+      return null
+    }
+  },
+  setItem: (k, v) => {
+    try {
+      localStorage.setItem(k, v)
+      if (storageFailing) {
+        storageFailing = false
+        window.dispatchEvent(new Event('grove:storage-ok'))
+      }
+    } catch (e) {
+      storageFailing = true
+      const quota = e?.name === 'QuotaExceededError' || e?.code === 22
+      window.dispatchEvent(new CustomEvent('grove:storage-error', { detail: { quota } }))
+    }
+  },
+  removeItem: (k) => {
+    try {
+      localStorage.removeItem(k)
+    } catch {
+      /* ignora */
+    }
+  },
 }
 
 const cleanTags = (tags = []) => [...new Set(tags.map((t) => String(t).trim()).filter(Boolean))]
@@ -56,20 +98,75 @@ function sanitizeSource(x) {
   return url ? { ...base, url } : null
 }
 
-function sanitize(d) {
-  const notebooks = (d.notebooks ?? [])
-    .filter((n) => n && isStr(n.id) && isStr(n.name) && biomeOk(n.biome))
-    .map((n) => ({
-      id: n.id, name: n.name, biome: n.biome,
-      createdAt: isStr(n.createdAt) ? n.createdAt : new Date().toISOString(),
-      sources: (n.sources ?? []).map(sanitizeSource).filter(Boolean),
-    }))
-  const trees = (d.trees ?? [])
-    .filter((t) => t && isStr(t.id) && speciesOk(t.biome, t.species))
-    .map((t) => ({ ...t, stages: Math.min(MAX_STAGES, Math.max(1, Math.round(Number(t.stages) || 1))) }))
-  const sessions = (d.sessions ?? [])
-    .filter((x) => x && isStr(x.id) && Number.isFinite(x.minutes) && biomeOk(x.biome))
-  return { notebooks, trees, sessions }
+const THEMES = ['system', 'light', 'dark']
+const validDate = (v) => isStr(v) && Number.isFinite(Date.parse(v))
+
+/** ISO válido e que não está no futuro; senão undefined. */
+function validIsoNotFuture(v) {
+  if (!isStr(v)) return undefined
+  const t = Date.parse(v)
+  return Number.isFinite(t) && t <= Date.now() ? new Date(t).toISOString() : undefined
+}
+
+/**
+ * Valida cada campo de Settings, caindo no padrão.
+ * @param {unknown} x
+ * @returns {import('../types.js').Settings}
+ */
+function sanitizeSettings(x) {
+  const s = x && typeof x === 'object' ? x : {}
+  const goal = s.dailyGoalMinutes
+  return {
+    theme: THEMES.includes(s.theme) ? s.theme : defaultSettings.theme,
+    dailyGoalMinutes: Number.isInteger(goal) && goal >= 15 && goal <= 600 ? goal : null,
+    notifyOnComplete: s.notifyOnComplete === true,
+    soundOnComplete: s.soundOnComplete === true,
+  }
+}
+
+function sanitizeNotebook(n) {
+  if (!n || !isStr(n.id) || !isStr(n.name) || !biomeOk(n.biome)) return null
+  return {
+    id: n.id,
+    name: n.name,
+    biome: n.biome,
+    createdAt: validDate(n.createdAt) ? n.createdAt : new Date().toISOString(),
+    sources: (Array.isArray(n.sources) ? n.sources : []).map(sanitizeSource).filter(Boolean),
+  }
+}
+
+/** Whitelist de campos de Session. @returns {import('../types.js').Session | null} */
+function sanitizeSession(x) {
+  if (!x || !isStr(x.id) || !validDate(x.completedAt) || !biomeOk(x.biome)) return null
+  if (!Number.isFinite(x.minutes) || x.minutes < 1 || x.minutes > 1440) return null
+  /** @type {import('../types.js').Session} */
+  const session = {
+    id: x.id,
+    completedAt: x.completedAt,
+    minutes: x.minutes,
+    biome: x.biome,
+    species: isStr(x.species) ? x.species : '',
+  }
+  if (isStr(x.taskId)) session.taskId = x.taskId
+  if (isStr(x.notebookId)) session.notebookId = x.notebookId
+  if (isStr(x.treeId)) session.treeId = x.treeId
+  if (Number.isFinite(x.stagesGained)) session.stagesGained = x.stagesGained
+  return session
+}
+
+/** Whitelist de campos de Tree. @param {Set<string>} notebookIds @returns {import('../types.js').Tree | null} */
+function sanitizeTree(x, notebookIds) {
+  if (!x || !isStr(x.id) || !speciesOk(x.biome, x.species)) return null
+  /** @type {import('../types.js').Tree} */
+  const tree = {
+    id: x.id,
+    biome: x.biome,
+    species: x.species,
+    stages: Math.min(MAX_STAGES, Math.max(1, Math.round(Number(x.stages) || 1))),
+    plantedAt: validDate(x.plantedAt) ? x.plantedAt : new Date().toISOString(),
+  }
+  if (isStr(x.notebookId) && notebookIds.has(x.notebookId)) tree.notebookId = x.notebookId
+  return tree
 }
 
 const PRIORITIES = ['baixa', 'media', 'alta']
@@ -117,6 +214,32 @@ function sanitizeTask(x, notebookIds, columnIds) {
   if (isStr(x.dueDate) && DUE_DATE_RE.test(x.dueDate)) task.dueDate = x.dueDate
   if (isStr(x.notebookId) && notebookIds.has(x.notebookId)) task.notebookId = x.notebookId
   return task
+}
+
+/**
+ * Converte qualquer objeto no formato de AppData válido (usado na importação e na hidratação
+ * do localStorage). Campos inválidos são descartados; nunca lança.
+ * @param {any} d
+ * @returns {Omit<import('../types.js').AppData, 'schemaVersion'> & { settings: import('../types.js').Settings }}
+ */
+function sanitizeAppData(d) {
+  const list = (v) => (Array.isArray(v) ? v : [])
+  const notebooks = list(d?.notebooks).map(sanitizeNotebook).filter(Boolean)
+  const notebookIds = new Set(notebooks.map((n) => n.id))
+
+  const rawColumns = list(d?.columns).map(sanitizeColumn).filter(Boolean)
+  const columns = rawColumns.length ? rawColumns : defaultColumns.map((c) => ({ ...c }))
+  const columnIds = new Set(columns.map((c) => c.id))
+
+  const tasks = list(d?.tasks)
+    .map((t) => sanitizeTask(t, notebookIds, columnIds))
+    .filter(Boolean)
+  const sessions = list(d?.sessions).map(sanitizeSession).filter(Boolean)
+  const trees = list(d?.trees)
+    .map((t) => sanitizeTree(t, notebookIds))
+    .filter(Boolean)
+
+  return { notebooks, columns, tasks, sessions, trees, settings: sanitizeSettings(d?.settings) }
 }
 
 export const useStore = create()(
@@ -275,6 +398,9 @@ export const useStore = create()(
             ? wantedNotebookId
             : undefined
 
+        // Horário real do término (o watcher calcula por startedAt + duração); inválido/futuro = agora.
+        const when = validIsoNotFuture(input.completedAt) ?? new Date().toISOString()
+
         const gain = stagesForMinutes(input.minutes)
         const existing = input.treeId ? s.trees.find((t) => t.id === input.treeId) : undefined
 
@@ -291,7 +417,7 @@ export const useStore = create()(
             biome: input.biome,
             species: input.species,
             stages: Math.min(MAX_STAGES, gain),
-            plantedAt: new Date().toISOString(),
+            plantedAt: when,
             notebookId,
           }
           isNewTree = true
@@ -300,7 +426,7 @@ export const useStore = create()(
         const stagesGained = isNewTree ? tree.stages : tree.stages - existing.stages
         const session = {
           id: uid(),
-          completedAt: new Date().toISOString(),
+          completedAt: when,
           minutes: input.minutes,
           taskId: task?.id,
           notebookId,
@@ -321,38 +447,44 @@ export const useStore = create()(
       },
 
       exportData: () => {
-        const { schemaVersion, notebooks, columns, tasks, sessions, trees } = get()
-        return JSON.stringify({ schemaVersion, notebooks, columns, tasks, sessions, trees }, null, 2)
+        const { schemaVersion, notebooks, columns, tasks, sessions, trees, settings } = get()
+        return JSON.stringify({ schemaVersion, notebooks, columns, tasks, sessions, trees, settings }, null, 2)
       },
       importData: (json) => {
         let d
         try { d = JSON.parse(json) } catch { throw new Error('O arquivo não é um JSON válido.') }
         if (!d || d.schemaVersion !== 1) throw new Error('Arquivo de backup inválido ou de outra versão.')
-        const { notebooks, trees, sessions } = sanitize(d)
-
-        const rawColumns = Array.isArray(d.columns) ? d.columns.map(sanitizeColumn).filter(Boolean) : []
-        const columns = rawColumns.length ? rawColumns : defaultColumns
-        const columnIds = new Set(columns.map((c) => c.id))
-        const notebookIds = new Set(notebooks.map((n) => n.id))
-        const tasks = (Array.isArray(d.tasks) ? d.tasks : [])
-          .map((t) => sanitizeTask(t, notebookIds, columnIds))
-          .filter(Boolean)
-
-        set({ notebooks, columns, tasks, sessions, trees })
+        // Backups antigos (sem `settings`) continuam válidos: as configurações caem no padrão.
+        set(sanitizeAppData(d))
       },
+      /** @param {Partial<import('../types.js').Settings>} patch */
+      updateSettings: (patch) =>
+        set((s) => ({ settings: sanitizeSettings({ ...s.settings, ...patch }) })),
       resetData: () => set({ ...initialData }),
     }),
     {
       name: 'grove:v1',
       // v2: Column ganhou `isDone` (spec 03, C1). Dados antigos mantêm `done` como conclusão.
-      version: 2,
+      // v3: novo campo `settings` (schemaVersion do backup continua 1: o campo é opcional).
+      version: 3,
+      storage: createJSONStorage(() => safeStorage),
       migrate: (persisted, version) => {
-        if (!persisted || version >= 2 || !Array.isArray(persisted.columns)) return persisted
-        return {
-          ...persisted,
-          columns: persisted.columns.map((c) => ({ ...c, isDone: c.isDone ?? c.id === 'done' })),
+        if (!persisted || typeof persisted !== 'object') return persisted
+        let next = persisted
+        if (version < 2 && Array.isArray(next.columns)) {
+          next = {
+            ...next,
+            columns: next.columns.map((c) => ({ ...c, isDone: c.isDone ?? c.id === 'done' })),
+          }
         }
+        if (version < 3) next = { ...next, settings: next.settings ?? defaultSettings }
+        return next
       },
+      // O estado salvo passa pela mesma validação da importação: localStorage corrompido não derruba telas.
+      merge: (persisted, current) => ({
+        ...current,
+        ...(persisted && typeof persisted === 'object' ? sanitizeAppData(persisted) : {}),
+      }),
       partialize: (s) => ({
         schemaVersion: s.schemaVersion,
         notebooks: s.notebooks,
@@ -360,6 +492,7 @@ export const useStore = create()(
         tasks: s.tasks,
         sessions: s.sessions,
         trees: s.trees,
+        settings: s.settings,
       }),
     },
   ),
