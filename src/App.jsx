@@ -9,6 +9,7 @@ import NotebookDetailPage from './features/notebooks/NotebookDetailPage'
 import CompletionDialog from './features/focus/CompletionDialog'
 import BackupButtons from './components/BackupButtons'
 import StorageWarning from './components/StorageWarning'
+import ThemeToggle from './components/ThemeToggle'
 import { useTimer } from './features/focus/useTimer'
 import { useSessionWatcher } from './features/focus/useSessionWatcher'
 import { useEffect } from 'react'
@@ -55,6 +56,7 @@ export default function App() {
             </NavLink>
           ))}
         </nav>
+        <ThemeToggle />
         <BackupButtons />
       </header>
       <StorageWarning />

@@ -12,12 +12,23 @@ import { formatDueDate, isTaskOverdue, PRIORITY_LABELS } from '../../lib/kanban'
  *   done: boolean,
  *   columns: import('../../types.js').Column[],
  *   interactive?: boolean quando false não renderiza botões (overlay),
+ *   dragHandle?: import('react').ReactNode botão "Arrastar" (só no cartão arrastável),
  *   onEdit: () => void,
  *   onDelete: () => void,
  *   onMove: (columnId: string) => void,
  * }} props
  */
-export function TaskContent({ task, notebookName, done, columns, interactive = true, onEdit, onDelete, onMove }) {
+export function TaskContent({
+  task,
+  notebookName,
+  done,
+  columns,
+  interactive = true,
+  dragHandle,
+  onEdit,
+  onDelete,
+  onMove,
+}) {
   const overdue = isTaskOverdue(task, done)
   const otherColumns = columns.filter((c) => c.id !== task.columnId)
 
@@ -33,6 +44,7 @@ export function TaskContent({ task, notebookName, done, columns, interactive = t
             {formatDueDate(task.dueDate)}
           </span>
         )}
+        {interactive && dragHandle}
       </div>
 
       <h3 className="kb-card-title">{task.title}</h3>
@@ -77,8 +89,9 @@ export function TaskContent({ task, notebookName, done, columns, interactive = t
 }
 
 /**
- * Cartão arrastável (sortable). O cartão inteiro é o ativador: PointerSensor com
- * distância de 6 px e KeyboardSensor (spec 03, seção 5).
+ * Cartão arrastável (sortable). Só o botão "Arrastar" é o ativador (B11): o <li> fica sem
+ * papel interativo, e os botões/link/select do cartão continuam normais para o teclado.
+ * Sensores: PointerSensor com distância de 6 px e KeyboardSensor (configurados em TasksPage).
  * @param {Parameters<typeof TaskContent>[0]} props
  */
 export default function TaskCard(props) {
@@ -93,22 +106,26 @@ export default function TaskCard(props) {
     isDragging,
   } = useSortable({ id: task.id })
 
-  // setActivatorNodeRef no mesmo nó dos listeners faz o KeyboardSensor ignorar
-  // Space/Enter pressionado em botões dentro do cartão (target !== activator).
-  const ref = (node) => {
-    setNodeRef(node)
-    setActivatorNodeRef(node)
-  }
-
-  return (
-    <li
-      ref={ref}
-      style={{ transform: CSS.Transform.toString(transform), transition }}
-      className={`kb-card${isDragging ? ' kb-card-dragging' : ''}`}
+  const dragHandle = (
+    <button
+      type="button"
+      ref={setActivatorNodeRef}
+      className="kb-drag-handle"
+      aria-label={`Arrastar tarefa ${task.title}`}
       {...attributes}
       {...listeners}
     >
-      <TaskContent {...props} />
+      <span aria-hidden="true">⠿</span>
+    </button>
+  )
+
+  return (
+    <li
+      ref={setNodeRef}
+      style={{ transform: CSS.Transform.toString(transform), transition }}
+      className={`kb-card${isDragging ? ' kb-card-dragging' : ''}`}
+    >
+      <TaskContent {...props} dragHandle={dragHandle} />
     </li>
   )
 }

@@ -4,7 +4,10 @@ import { useStore } from '../../store/useStore'
 import FocusChart from './FocusChart'
 import StatsTable from './StatsTable'
 import {
+  bestStreak,
+  currentStreak,
   formatMinutes,
+  minutesByBiome,
   minutesByNotebook,
   minutesByTask,
   minutesPerDay,
@@ -19,7 +22,10 @@ const VIEWS = [
   { id: 'mes', label: 'Mês', title: 'Foco por mês nos últimos 12 meses', column: 'Mês' },
   { id: 'caderno', label: 'Caderno', title: 'Foco por caderno', column: 'Caderno', horizontal: true },
   { id: 'tarefa', label: 'Tarefa', title: 'Foco por tarefa (10 maiores)', column: 'Tarefa', horizontal: true },
+  { id: 'bioma', label: 'Bioma', title: 'Foco por bioma', column: 'Bioma', horizontal: true },
 ]
+
+const days = (n) => `${n} ${n === 1 ? 'dia' : 'dias'}`
 
 export default function StatsPage() {
   const sessions = useStore((s) => s.sessions)
@@ -34,9 +40,15 @@ export default function StatsPage() {
       case 'mes': return minutesPerMonth(sessions, 12)
       case 'caderno': return minutesByNotebook(sessions, notebooks)
       case 'tarefa': return minutesByTask(sessions, tasks, 10)
+      case 'bioma': return minutesByBiome(sessions)
       default: return minutesPerDay(sessions, 14)
     }
   }, [viewId, sessions, notebooks, tasks])
+
+  const streak = useMemo(
+    () => ({ current: currentStreak(sessions), best: bestStreak(sessions) }),
+    [sessions],
+  )
 
   const total = rows.reduce((sum, r) => sum + r.minutes, 0)
 
@@ -54,6 +66,10 @@ export default function StatsPage() {
   return (
     <section className="stats-page">
       <h1>Gráficos</h1>
+
+      <p className="stats-streak" role="status">
+        Sequência atual: {days(streak.current)} · Melhor: {days(streak.best)}
+      </p>
 
       <div className="stats-views" role="group" aria-label="Visão dos gráficos">
         {VIEWS.map((v) => (

@@ -11,14 +11,14 @@ export function allTags(sources) {
 
 /**
  * Filtra fontes por texto (título, URL, texto, tags) e por tags: mostra as que têm
- * TODAS as tags marcadas (C3: E).
+ * TODAS as tags marcadas (C3: E). Espaços nas pontas da busca são ignorados.
  * @param {import('../types.js').Source[]} sources
  * @param {string} query
  * @param {string[]} selectedTags
  * @returns {import('../types.js').Source[]}
  */
 export function filterSources(sources, query, selectedTags) {
-  const q = normalize(query)
+  const q = normalize(query).trim()
   return sources.filter((s) => {
     if (!selectedTags.every((t) => (s.tags ?? []).includes(t))) return false
     if (!q) return true

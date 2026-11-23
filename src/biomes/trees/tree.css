@@ -1,7 +1,11 @@
+/* A cena (céu e chão) vem de biomes/config.js e continua clara nos dois temas;
+   o contorno com --border separa a cena do fundo escuro. */
 .tree-svg {
   width: min(320px, 82vw);
   height: auto;
   display: block;
+  border: 1px solid var(--border);
+  border-radius: 16px;
 }
 
 .tree-body {

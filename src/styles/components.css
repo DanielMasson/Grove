@@ -104,18 +104,23 @@
   min-width: 120px;
 }
 
-/* Modal nativo: focus trap, Esc e retorno do foco vêm de graça com <dialog>. */
+/* Modal nativo: focus trap, Esc e retorno do foco vêm de graça com <dialog>.
+   O padding fica no .modal-body: assim um clique no <dialog> em si só pode ser no fundo (B10). */
 dialog.modal {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: var(--surface);
   color: var(--text);
-  padding: 24px;
+  padding: 0;
   width: min(480px, calc(100vw - 32px));
 }
 
 dialog.modal::backdrop {
   background: var(--overlay);
+}
+
+.modal-body {
+  padding: 24px;
 }
 
 dialog.modal h2 {

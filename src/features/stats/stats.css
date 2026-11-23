@@ -2,6 +2,7 @@
 .stats-page { display: flex; flex-direction: column; gap: 12px; padding-bottom: 32px; }
 .stats-page h1, .stats-title { margin: 0; }
 .stats-title { font-size: 1.1rem; }
+.stats-streak { margin: 0; font-weight: 600; }
 .stats-views { display: flex; flex-wrap: wrap; gap: 8px; }
 .stats-views .preset { min-height: 44px; min-width: 80px; }
 .stats-chart { position: relative; width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; }

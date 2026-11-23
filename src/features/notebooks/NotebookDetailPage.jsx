@@ -228,7 +228,7 @@ export default function NotebookDetailPage() {
         open={confirmDelete}
         danger
         title="Excluir caderno?"
-        message={`Excluir ${notebook.name}? Isso apaga ${taskCount} ${
+        message={`Excluir o caderno “${notebook.name}”? Isso apaga ${taskCount} ${
           taskCount === 1 ? 'tarefa' : 'tarefas'
         } e mantém ${sessionCount} ${sessionCount === 1 ? 'sessão' : 'sessões'} de foco no histórico, sem vínculo.`}
         confirmLabel="Sim, excluir"

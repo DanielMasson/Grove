@@ -14,13 +14,14 @@ export function normalize(text) {
 
 /**
  * Procura `query` nos cadernos: nome, título/URL/texto das fontes e tags.
+ * Espaços nas pontas da busca são ignorados (só espaços = busca vazia).
  * @param {import('../types.js').Notebook[]} notebooks
  * @param {string} query
  * @returns {{ notebook: import('../types.js').Notebook, matchedSource: import('../types.js').Source | null }[]}
  *   cadernos que casam com a busca; `matchedSource` aponta a fonte encontrada (null se casou pelo nome).
  */
 export function searchNotebooks(notebooks, query) {
-  const q = normalize(query)
+  const q = normalize(query).trim()
   if (!q) return notebooks.map((notebook) => ({ notebook, matchedSource: null }))
 
   const results = []

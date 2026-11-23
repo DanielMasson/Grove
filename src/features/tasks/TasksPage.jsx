@@ -12,7 +12,7 @@ import { sortableKeyboardCoordinates } from '@dnd-kit/sortable'
 import { useStore } from '../../store/useStore'
 import { normalize } from '../../lib/search'
 import { useDebouncedValue } from '../../lib/useDebouncedValue'
-import { isDoneTask } from '../../lib/kanban'
+import { DUE_FILTERS, isDoneTask, matchesDueFilter } from '../../lib/kanban'
 import KanbanColumn from './KanbanColumn'
 import { TaskContent } from './TaskCard'
 import TaskForm from './TaskForm'
@@ -35,14 +35,15 @@ export default function TasksPage() {
 
   const sortedColumns = useMemo(() => [...columns].sort((a, b) => a.order - b.order), [columns])
 
-  // Filtros (RF15 / C2): caderno, prioridade e busca por título.
+  // Filtros (RF15 / C2 / F10): caderno, prioridade, prazo e busca por título. Combinam entre si.
   const [filterNotebook, setFilterNotebook] = useState('')
   const [filterPriority, setFilterPriority] = useState('')
+  const [filterDue, setFilterDue] = useState('')
   const [query, setQuery] = useState('')
   const debouncedQuery = useDebouncedValue(query)
   const search = debouncedQuery.trim()
 
-  const filtersActive = Boolean(filterNotebook || filterPriority || search)
+  const filtersActive = Boolean(filterNotebook || filterPriority || filterDue || search)
 
   const visibleTasks = useMemo(
     () =>
@@ -50,9 +51,10 @@ export default function TasksPage() {
         (t) =>
           (!filterNotebook || t.notebookId === filterNotebook) &&
           (!filterPriority || t.priority === filterPriority) &&
+          (!filterDue || matchesDueFilter(t, filterDue, isDoneTask(t, columns))) &&
           (!search || normalize(t.title).includes(normalize(search))),
       ),
-    [tasks, filterNotebook, filterPriority, search],
+    [tasks, columns, filterNotebook, filterPriority, filterDue, search],
   )
 
   const notebookNameOf = (task) => notebooks.find((n) => n.id === task.notebookId)?.name ?? null
@@ -149,7 +151,7 @@ export default function TasksPage() {
 
   const screenReaderInstructions = {
     draggable:
-      'Para mover uma tarefa: foque nela, pressione Espaço ou Enter para pegá-las, use as setas para escolher a posição e Espaço ou Enter para soltar. Pressione Escape para cancelar. Como alternativa, use o seletor "Mover para" em cada tarefa.',
+      'Para mover uma tarefa: foque no botão Arrastar dela, pressione Espaço ou Enter para pegá-la, use as setas para escolher a posição e Espaço ou Enter para soltá-la. Pressione Escape para cancelar. Como alternativa, use o seletor "Mover para" em cada tarefa.',
   }
 
   const onDragEnd = ({ active, over }) => {
@@ -232,6 +234,17 @@ export default function TasksPage() {
             <option value="alta">Alta</option>
             <option value="media">Média</option>
             <option value="baixa">Baixa</option>
+          </select>
+        </div>
+
+        <div className="field">
+          <label htmlFor="kb-filter-due">Prazo</label>
+          <select id="kb-filter-due" value={filterDue} onChange={(e) => setFilterDue(e.target.value)}>
+            {DUE_FILTERS.map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
           </select>
         </div>
 

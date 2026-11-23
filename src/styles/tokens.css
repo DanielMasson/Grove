@@ -1,16 +1,53 @@
-/* Tokens de cor/tipografia. Todo o CSS usa var(--...) para facilitar o modo escuro depois:
-   basta redefinir estes valores em [data-theme='dark']. */
+/* Tokens de cor/tipografia. Todo o CSS usa var(--...), então o modo escuro só redefine estes valores.
+   Tema: [data-theme='light'|'dark'] no <html> força a escolha; sem o atributo ("Sistema"),
+   vale prefers-color-scheme. Contraste de texto conferido (WCAG AA, 4.5:1):
+   claro  — texto/fundo 11,5 · mudo/fundo 5,2 · contraste/primary 5,4 · accent/surface 5,35 · danger/surface 5,5
+   escuro — texto/fundo 14,8 · mudo/surface 7,6 · contraste/primary 6,8 · accent/surface 6,6 · danger/surface 5,9 */
 :root {
+  color-scheme: light;
   --bg: #f3faf6;
   --surface: #ffffff;
   --text: #1d3b34;
   --text-muted: #4f6f67;
-  --primary: #2f8f6b;
+  --primary: #27785a;
   --primary-contrast: #ffffff;
-  --accent: #4a90c2;
+  --accent: #2f6fa3;
   --border: #cfe3da;
   --danger: #b4443c;
   --overlay: rgba(29, 59, 52, 0.45);
   --radius: 12px;
   --font: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Escolha explícita do usuário: Escuro */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #0f1f1b;
+  --surface: #16302a;
+  --text: #e6f2ed;
+  --text-muted: #a9c4ba;
+  --primary: #3fae85;
+  --primary-contrast: #08140f;
+  --accent: #7fb8e3;
+  --border: #2f5249;
+  --danger: #f28b82;
+  --overlay: rgba(0, 0, 0, 0.6);
+}
+
+/* "Sistema": segue o sistema operacional, a menos que o usuário tenha forçado Claro.
+   Mesmos valores do bloco acima (CSS não permite compartilhar entre seletor e media query). */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --bg: #0f1f1b;
+    --surface: #16302a;
+    --text: #e6f2ed;
+    --text-muted: #a9c4ba;
+    --primary: #3fae85;
+    --primary-contrast: #08140f;
+    --accent: #7fb8e3;
+    --border: #2f5249;
+    --danger: #f28b82;
+    --overlay: rgba(0, 0, 0, 0.6);
+  }
 }
