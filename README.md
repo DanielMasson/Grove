@@ -3,9 +3,9 @@
 Aplicativo web para estudar com foco: cronômetro que faz uma árvore crescer, tarefas em kanban e cadernos de estudo por matéria. Tudo roda no navegador, sem back-end.
 
 - **Tema:** produtividade e estudo
-- **Integrantes:** Arthur _(sobrenome)_ e Vanderlei _(sobrenome)_
-- **Site (GitHub Pages):** _(link: https://SEU-USUARIO.github.io/Grove/)_
-- **Repositório:** _(link)_
+- **Integrantes:** Ana Luisa Paixão, Arthur Araujo, Daniel Masson, Gabriela Nietiedt e Vanderlei Pittan.
+- **Site (GitHub Pages):** https://danielmasson.github.io/Grove/
+- **Repositório:** https://github.com/DanielMasson/Grove/
 
 ## Objetivo, problema e público-alvo
 Estudantes têm dificuldade de manter o foco e de organizar o estudo por matéria. O Grove junta sessões de foco com recompensa visual (uma floresta que cresce), um quadro de tarefas e cadernos com fontes de estudo, mostrando depois quanto tempo foi dedicado a cada matéria e tarefa.
@@ -27,9 +27,48 @@ React 18, Vite, JavaScript (JSX), React Router (HashRouter), Zustand (com persis
 - **Acessibilidade e segurança:** navegação por teclado, rótulos nos formulários, foco visível; links validados (só http/https) e texto do usuário sempre como texto.
 
 ## Requisitos funcionais e não funcionais
-<!-- TODO: copiar do documento de requisitos apenas o que foi feito.
-     Áreas: Foco RF01 a RF06, Floresta RF07, Gráficos RF08 a RF10, Tarefas RF11 a RF15, Cadernos RF16 a RF20. -->
-_(copiar do documento de requisitos, removendo o que não foi feito)_
+Requisitos funcionais (RF):
+Foco (inspirado no Forest)
+RF01. O usuário pode iniciar um cronômetro de foco escolhendo a duração (ex.: 15, 25, 45 min ou valor personalizado).
+RF02. O usuário pode pausar, retomar ou desistir da sessão.
+RF03. Durante a sessão, uma árvore cresce de forma visual conforme o tempo passa.
+RF04. Ao concluir a sessão, a árvore é “plantada” na floresta do usuário. Se ele desistir, a árvore não é plantada e nem cresce.
+RF05. O usuário pode vincular a sessão a uma tarefa ou a um caderno.
+RF06. O sistema registra cada sessão (data, duração, status e vínculo).
+Floresta e gráficos
+RF07. O sistema exibe a floresta com todas as árvores plantadas.
+RF08. O sistema exibe gráficos de tempo de foco por dia, semana e mês.
+RF09. O sistema exibe o tempo de foco por caderno e/ou por tarefa.
+RF10. O sistema mostra estatísticas resumidas (total de horas, média diária, sessões concluídas, sequência de dias).
+Tarefas (inspirado no Trello, uso individual)
+RF11. O usuário pode criar, editar e excluir tarefas, com título, descrição, prazo e prioridade.
+RF12. As tarefas ficam organizadas em colunas ( A fazer, Em andamento, Concluído).
+RF13. O usuário pode mover tarefas entre colunas (arrastar e soltar).
+RF14. O sistema destaca tarefas com prazo próximo ou vencido.
+RF15. O usuário pode filtrar tarefas por prioridade ou caderno.
+Cadernos (inspirado no Google NotebookLM)
+RF16. O usuário pode criar, renomear e excluir cadernos de estudo que são nomeadas ‘florestas’.
+RF17. O usuário pode adicionar fontes a um caderno: links de sites, vídeos do YouTube e notas de texto.
+RF18. O usuário pode editar e remover fontes, e organizá-las por categoria ou etiqueta.
+RF19. O sistema exibe vídeos do YouTube incorporados dentro do caderno.
+RF20. O usuário pode buscar por texto dentro dos cadernos e das fontes.
+Gerais
+RF21. Os dados ficam salvos no navegador (localStorage) e permanecem ao recarregar a página.
+RF22. O usuário pode exportar e importar seus dados em arquivo JSON (backup).
+RF23. A navegação entre as telas (Foco, Floresta/Gráficos, Tarefas, Cadernos) é acessível em qualquer momento por um menu.
+
+Requisitos não funcionais (RNF)
+RNF01. Usabilidade: interface simples e consistente, com ações principais a no máximo 2 ou 3 cliques e mensagens claras de confirmação (ex.: antes de excluir).
+RNF02. Responsividade: o layout se adapta a celular, tablet e computador.
+RNF03. Desempenho: carregamento rápido (sem back-end), sem travamentos ao alternar entre telas ou renderizar gráficos.
+RNF04. Precisão do cronômetro: o tempo é calculado pela diferença entre horários (e não só por contagem de intervalos), para continuar correto mesmo com a aba em segundo plano.
+RNF05. Acessibilidade: contraste adequado, textos alternativos, navegação por teclado, rótulos nos formulários e uso de HTML organizado.
+RNF06. Persistência e privacidade: os dados ficam apenas no dispositivo do usuário, sem login e sem envio a servidores.
+RNF07. Segurança: o conteúdo digitado pelo usuário é tratado como texto (evitando injeção de HTML/XSS) e os links externos abrem com rel="noopener noreferrer".
+RNF08. Disponibilidade: hospedado no GitHub Pages, acessível por link público, sem instalação.
+RNF09. Manutenibilidade: código organizado em pastas e módulos (ex.: storage.js, timer.js, tasks.js, notebooks.js), com nomes claros e comentários nos trechos principais.
+RNF10. Documentação: README completo, com requisitos, instruções de uso e participação de cada integrante.
+
 
 ## Como acessar e usar
 1. Abra o site (link acima).
@@ -39,10 +78,9 @@ _(copiar do documento de requisitos, removendo o que não foi feito)_
 5. Veja as árvores em **Floresta** e o tempo dedicado em **Gráficos**.
 6. Em **Tema**, no topo da página, escolha Claro, Escuro ou Sistema.
 
-<!-- TODO: tirar 2 ou 3 capturas (Foco em andamento, Floresta, Tarefas), salvar em docs/img/ e incluir assim:
-![Sessão de foco em andamento, com a árvore crescendo e o tempo restante](docs/img/foco.png)
-![Floresta com o resumo por bioma](docs/img/floresta.png)
-![Quadro de tarefas em colunas](docs/img/tarefas.png)
+<img width="1827" height="916" alt="image" src="https://github.com/user-attachments/assets/6a7f5085-6c9f-4cf2-9970-ec22a3fd2c6a" />
+<img width="1822" height="901" alt="image" src="https://github.com/user-attachments/assets/f3a97e9b-c2ab-4cb2-bad6-87203d29418f" />
+
 -->
 
 ## Como rodar localmente
@@ -60,6 +98,8 @@ Build de produção: `npm run build`. Testes: `npm test`.
 
 ## Participação de cada integrante
 | Integrante | Contribuição |
-|---|---|
-| Arthur | Componente `Modal` e estilos compartilhados, Tarefas (kanban acessível, filtros de prazo), Cadernos, Gráficos (sequência de dias e visão por bioma), modo escuro, testes automatizados, `index.html` e README. |
-| Vanderlei | _(pedir ao Vanderlei)_ |
+|Ana|Revisão dos requisitos funcionais e não funcionais, tester geral e Scrum Master|
+| Arthur | Componente `Modal` e estilos compartilhados, Tarefas (kanban acessível, filtros de prazo), Cadernos, Gráficos (sequência de dias e visão por bioma), modo escuro, testes automatizados, `index.html` e README. (Desenvolvedor)|
+|Daniel|Desenvolvedor principal e dono do repositório|
+|Gabriela|Requisitos funcionais, organização das inspirações (sites e telas) e organização do projeto em geral, editora do vídeo|
+| Vanderlei |Desenvolvedor secundário e criador do email e do canal no youtube|
